@@ -27,18 +27,41 @@ const os = require('os');
 const fs = require('fs');
 const maxLogLength = 80;
 
+function getJoke() {
+  var jokes = [
+    "knock knock, who'se there... boo? boo who? why are you sad?",
+    "sorry im not funny :(",
+    "What sits at the bottom of the sea and twitches?What sits at the bottom of the sea and twitches? A nervous wreck!A nervous wreck!",
+    "What did one elevator say to the other elevator?What did one elevator say to the other elevator? I think I'm coming down with something!I think I'm coming down with something!"
+  ];
+  return jokes[Math.floor(Math.random() * jokes.length)];;
+}
+
 // Bot responds depending on what message is posted.
 exports.sendBotChat = functions.firestore.document('messages/{messageId}').onCreate(
   async (snapshot) => {
+    // message the user or another bot has sent
     const text = snapshot.data().text;
+
+    // message we want to send
     let message = "";
 
+    // if the text is ..., set messsage to ...
     switch (text) {
       case "hello":
         message = `sup ${snapshot.data().name}`;
         break;
+      case "why did the chicken cross the road?":
+        message = "To get to the other side!! Haha"
+        break;
       default:
         message = "";
+    }
+
+    const funny = /funny/;
+    const joke = /joke/ ;
+    if (text.match(funny) || text.match(joke)) {
+      message = getJoke()
     }
 
     if (message.length > 0) {
@@ -70,6 +93,7 @@ exports.addWelcomeMessages = functions.auth.user().onCreate(async (user) => {
   console.log('Welcome message written to database.');
 });
 
+// on my project it doesn't work..........
 // Checks if uploaded images are flagged as Adult or Violence and if so blurs them.
 exports.blurOffensiveImages = functions.runWith({memory: '2GB'}).storage.object().onFinalize(
     async (object) => {
